@@ -5,12 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node bot.js"
+    "start": "nodemon bot.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.7"
   }
 }
