@@ -1,1 +1,1 @@
-web: forever bot.js
+web: node_modules/forever/bin/forever bot.js
