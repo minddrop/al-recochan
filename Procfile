@@ -1,1 +1,1 @@
-web: node_modules/forever/bin/forever bot.js
+worker: node_modules/forever/bin/forever bot.js
