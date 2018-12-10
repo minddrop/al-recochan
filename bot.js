@@ -18,8 +18,10 @@ bot.on('ready', () => {
       const user = userTable[`${newMan.user.id}`]
       user.out = new Date()
       const workingTime = Math.floor((user.out - user.in) / 60000)
-      const text = `${workingTime}分間お勤めお疲れ様です！`
-      channel.send(`${text}`, { reply: newMan.user })
+      if (workingTime > 0) {
+        const text = `${workingTime}分間お勤めお疲れ様です！`
+        channel.send(`${text}`, { reply: newMan.user })
+      }
     }
   })
 })
