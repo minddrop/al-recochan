@@ -26,6 +26,26 @@
 
       bot.on('voiceStateUpdate', (oldMan, newMan) => {
         const now = new Date()
+        if (oldMan.voiceChannel) {
+          rooms.log.send(
+            `${oldMan.displayName}が${
+              oldMan.voiceChannel
+            }から${now}から退出しました`
+          )
+          const userId = newMan.user.id
+          if (!userTable[userId]) {
+            userTable[userId] = { in: 0, out: 0 }
+          }
+          const user = userTable[userId]
+          user.out = now
+          if (!newMan.voiceChannel) {
+            const workingTime = Math.floor((user.out - user.in) / 60000)
+            if (workingTime > 4) {
+              const text = `${workingTime}分間お勤めお疲れ様です！`
+              rooms.reco.send(`${text}`, { reply: newMan.user })
+            }
+          }
+        }
         if (newMan.voiceChannel) {
           rooms.log.send(
             `${newMan.displayName}が${
@@ -38,24 +58,6 @@
           }
 
           userTable[`${userId}`].in = now
-        }
-        if (oldMan.voiceChannel && !newMan.voiceChannel) {
-          rooms.log.send(
-            `${oldMan.displayName}が${
-              oldMan.voiceChannel
-            }から${now}から退出しました`
-          )
-          const userId = newMan.user.id
-          if (!userTable[userId]) {
-            userTable[userId] = { in: 0, out: 0 }
-          }
-          const user = userTable[userId]
-          user.out = now
-          const workingTime = Math.floor((user.out - user.in) / 60000)
-          if (workingTime > 0) {
-            const text = `${workingTime}分間お勤めお疲れ様です！`
-            rooms.reco.send(`${text}`, { reply: newMan.user })
-          }
         }
       })
 
