@@ -9,13 +9,12 @@
   const e = 299999
 
   bot.on('ready', () => {
-    // recochan準備完了
-    console.log("Hello! I'm Reco.")
     const logBot = new Discord.Client()
     logBot.login(process.env.TOKEN_LOG)
-
     logBot.on('ready', () => {
-      // log記録用bot準備完了
+      // recochan準備完了
+      console.log("Hello! I'm Reco.")
+
       rooms['reco'] = bot.channels.find(val => val.name === 'reco')
         ? bot.channels.find(val => val.name === 'reco')
         : await (async () => {
