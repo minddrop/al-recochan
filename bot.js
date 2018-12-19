@@ -5,6 +5,8 @@
   bot.login(process.env.TOKEN)
   const userTable = {}
   const rooms = {}
+  // const e = -1
+  const e = 299999
 
   bot.on('ready', () => {
     // recochan準備完了
@@ -24,39 +26,30 @@
               .createChannel('reco', 'text')
           })()
 
-      bot.on('voiceStateUpdate', (oldMan, newMan) => {
+      bot.on('voiceStateUpdate', (oldMem, newMem) => {
         const now = new Date()
-        if (oldMan.voiceChannel) {
-          rooms.log.send(
-            `${oldMan.displayName}が${
-              oldMan.voiceChannel
-            }から${now}から退出しました`
-          )
-          const userId = newMan.user.id
+        if (oldMem.voiceChannel) {
+          rooms.log.send(formatRoomOut(now, oldMem))
+          const userId = newMem.user.id
           if (!userTable[userId]) {
             userTable[userId] = { in: 0, out: 0 }
           }
           const user = userTable[userId]
           user.out = now
-          if (!newMan.voiceChannel) {
-            const workingTime = Math.floor((user.out - user.in) / 60000)
-            if (workingTime > 4) {
-              const text = `${workingTime}分間お勤めお疲れ様です！`
-              rooms.reco.send(`${text}`, { reply: newMan.user })
+          if (!newMem.voiceChannel && user.in !== 0) {
+            const workingTime = user.out - user.in
+            if (workingTime > e) {
+              const text = formatWorkTime(workingTime, user)
+              rooms.reco.send(`${text}`, { reply: newMem.user })
             }
           }
         }
-        if (newMan.voiceChannel) {
-          rooms.log.send(
-            `${newMan.displayName}が${
-              newMan.voiceChannel
-            }から${now}に入室しました`
-          )
-          const userId = newMan.user.id
+        if (newMem.voiceChannel) {
+          rooms.log.send(formatRoomIn(now, newMem))
+          const userId = newMem.user.id
           if (!userTable[userId]) {
             userTable[userId] = { in: 0, out: 0 }
           }
-
           userTable[`${userId}`].in = now
         }
       })
@@ -73,3 +66,45 @@
     })
   })
 })()
+
+function formatWorkTime(workingTime, user) {
+  return `${ms2m(workingTime)}分間お勤めお疲れ様です！(${dateFormat(
+    user.in
+  )} 〜 ${dateFormat(user.out)})`
+}
+
+function formatRoomIn(now, newMem) {
+  return `${dateFormat(now)} **${newMem.displayName}** が${
+    newMem.voiceChannel
+  }に入室しました`
+}
+
+function formatRoomOut(now, oldMem) {
+  return `${dateFormat(now)} **${oldMem.displayName}** が${
+    oldMem.voiceChannel
+  }から退出しました`
+}
+
+function dateFormat(d) {
+  if (d) {
+    const year = d.getFullYear()
+    const month = zeroPadding(d.getMonth() + 1)
+    const date = zeroPadding(d.getDate())
+    const day = '日月火水木金土'.charAt(d.getDay())
+    const hour = zeroPadding(d.getHours())
+    const minute = zeroPadding(d.getMinutes())
+    const str = `${year}/${month}/${date}/ (${day}) ${hour}:${minute}`
+    return str
+  } else {
+    console.log('Your date is not found.')
+  }
+}
+
+function ms2m(time) {
+  return Math.floor(time / 60000)
+}
+
+function zeroPadding(num) {
+  const r = ('0' + num).slice(-2)
+  return r
+}
