@@ -1,70 +1,63 @@
-;(async () => {
-  const Discord = require('discord.js')
+const Discord = require('discord.js')
 
-  const bot = new Discord.Client()
-  bot.login(process.env.TOKEN)
-  const userTable = {}
-  const rooms = {}
-  // const e = -1
-  const e = 299999
+const bot = new Discord.Client()
+bot.login(process.env.TOKEN)
+const userTable = {}
+const rooms = {}
+// const e = -1
+const e = 299999
 
-  bot.on('ready', () => {
-    const logBot = new Discord.Client()
-    logBot.login(process.env.TOKEN_LOG)
-    logBot.on('ready', () => {
-      // recochan準備完了
-      console.log("Hello! I'm Reco.")
+bot.on('ready', () => {
+  const logBot = new Discord.Client()
+  logBot.login(process.env.TOKEN_LOG)
+  logBot.on('ready', async () => {
+    // recochan準備完了
+    console.log("Hello! I'm Reco.")
 
-      rooms['reco'] = bot.channels.find(val => val.name === 'reco')
-        ? bot.channels.find(val => val.name === 'reco')
-        : await (async () => {
-            return await bot.guilds
-              .find(val => {
-                return true
-              })
-              .createChannel('reco', 'text')
-          })()
+    rooms['reco'] = bot.channels.find(val => val.name === 'reco')
+      ? bot.channels.find(val => val.name === 'reco')
+      : await bot.guilds
+          .find(val => {
+            return true
+          })
+          .createChannel('reco', 'text')
+    rooms['log'] = logBot.channels.find(val => val.name === 'logs')
+      ? logBot.channels.find(val => val.name === 'logs')
+      : await logBot.guilds
+          .find(val => {
+            return true
+          })
+          .createChannel('logs', 'text')
 
-      bot.on('voiceStateUpdate', (oldMem, newMem) => {
-        const now = new Date()
-        if (oldMem.voiceChannel) {
-          rooms.log.send(formatRoomOut(now, oldMem))
-          const userId = newMem.user.id
-          if (!userTable[userId]) {
-            userTable[userId] = { in: 0, out: 0 }
-          }
-          const user = userTable[userId]
-          user.out = now
-          if (!newMem.voiceChannel && user.in !== 0) {
-            const workingTime = user.out - user.in
-            if (workingTime > e) {
-              const text = formatWorkTime(workingTime, user)
-              rooms.reco.send(`${text}`, { reply: newMem.user })
-            }
+    bot.on('voiceStateUpdate', (oldMem, newMem) => {
+      const now = new Date()
+      if (oldMem.voiceChannel) {
+        const userId = newMem.user.id
+        rooms.log.send(`${formatRoomOut(now, oldMem)}`)
+        if (!userTable[userId]) {
+          userTable[userId] = { in: 0, out: 0 }
+        }
+        const user = userTable[userId]
+        user.out = now
+        if (!newMem.voiceChannel && user.in !== 0) {
+          const workingTime = user.out - user.in
+          if (workingTime > e) {
+            const text = formatWorkTime(workingTime, user)
+            rooms.reco.send(`${text}`, { reply: newMem.user })
           }
         }
-        if (newMem.voiceChannel) {
-          rooms.log.send(formatRoomIn(now, newMem))
-          const userId = newMem.user.id
-          if (!userTable[userId]) {
-            userTable[userId] = { in: 0, out: 0 }
-          }
-          userTable[`${userId}`].in = now
+      }
+      if (newMem.voiceChannel) {
+        const userId = newMem.user.id
+        rooms.log.send(`${formatRoomIn(now, newMem)}`)
+        if (!userTable[userId]) {
+          userTable[userId] = { in: 0, out: 0 }
         }
-      })
-
-      rooms['log'] = logBot.channels.find(val => val.name === 'logs')
-        ? logBot.channels.find(val => val.name === 'logs')
-        : await (async () => {
-            return await logBot.guilds
-              .find(val => {
-                return true
-              })
-              .createChannel('logs', 'text')
-          })()
+        userTable[`${userId}`].in = now
+      }
     })
   })
-})()
+})
 
 function formatWorkTime(workingTime, user) {
   return `${ms2m(workingTime)}分間お勤めお疲れ様です！(${dateFormat(
