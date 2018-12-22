@@ -27,7 +27,10 @@ bot.on('ready', async () => {
         .createChannel('logs', 'text')
 
   bot.on('voiceStateUpdate', (oldMem, newMem) => {
-    const now = new Date()
+    const localTime = new Date()
+    const now = new Date(
+      localTime + (localTime.getTimezoneOffset() + 9 * 60) * 60000
+    )
     if (oldMem.voiceChannel) {
       const userId = newMem.user.id
       rooms.logs.send(`${formatRoomOut(now, oldMem)}`)
