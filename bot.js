@@ -38,8 +38,8 @@ bot.on('ready', async () => {
         userTable[userId] = { in: 0, out: 0 }
       }
       const user = userTable[userId]
-      user.out = now
       if (!newMem.voiceChannel && user.in !== 0) {
+        user.out = now
         const workingTime = user.out - user.in
         if (workingTime > e) {
           const text = formatWorkTime(workingTime, user)
